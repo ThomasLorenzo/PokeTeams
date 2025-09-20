@@ -6,17 +6,22 @@ API RESTful em NestJS para gerenciar treinadores, times e Pokémon integrando co
 
 - Node.js 20.x
 - npm (vem junto com o Node)
+- Docker + Docker Compose
 
 ## Como rodar localmente
 
 1. Clone este repositório
 2. Instale as dependências:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 3. Configure as variáveis de ambiente (copie `.env.example` para `.env`)
-4. Inicie a aplicação:
+4. Suba o banco de dados com Docker:
+    ```
+    docker compose up -d
+    ```
+5. Inicie a aplicação:
     ```bash
     npm run start:dev
     ```
-5. Acesse em: http://localhost:3000
+6. Acesse em: http://localhost:3000
