@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
 import { TrainerResponseDto } from './dto/trainer-response.dto';
+import { PaginationDto, PaginatedResponseDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class TrainersService {
@@ -16,15 +17,33 @@ export class TrainersService {
         return this.repository.save(trainer);
     }
 
-    async findAll(): Promise<TrainerResponseDto[]> {
-        // Busca todos os treinadores
-        const trainers = await this.repository.find();
+    async findAll(pagination: PaginationDto = { page: 1, limit: 10 }): Promise<PaginatedResponseDto<TrainerResponseDto>> {
+        const { page = 1, limit = 10 } = pagination;
+        const skip = (page - 1) * limit;
+
+        // Busca todos os treinadores com paginação
+        const [trainers, total] = await this.repository.findAndCount({
+            skip: skip,
+            take: limit,
+        });
         
         if (trainers.length === 0) {
             throw new NotFoundException('Nenhum treinador encontrado');
         }
-        
-        return trainers;
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: trainers,
+            pagination: {
+                page: page,
+                limit: limit,
+                total: total,
+                totalPages: totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
+        };
     }
 
     async findOne(id: number): Promise<TrainerResponseDto> {

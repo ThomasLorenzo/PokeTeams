@@ -6,6 +6,7 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamResponseDto } from './dto/team-response.dto';
 import { Trainer } from '../trainers/entities/trainer.entity';
+import { PaginationDto, PaginatedResponseDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class TeamsService {
@@ -31,19 +32,45 @@ export class TeamsService {
         return this.teamsRepository.save(team);
     }
 
-    async findAll(): Promise<TeamResponseDto[]> {
+    async findAll(pagination: PaginationDto = { page: 1, limit: 10 }): Promise<PaginatedResponseDto<TeamResponseDto>> {
+        const { page = 1, limit = 10 } = pagination;
+        const skip = (page - 1) * limit;
+
         // Busca todos os times, ligando com os treinadores
-        const teams = await this.teamsRepository.find({ relations: ['treinador'] });
+        const [teams, total] = await this.teamsRepository.findAndCount({ 
+            relations: ['treinador'],
+            skip: skip,
+            take: limit,
+        });
         
         if (teams.length === 0) {
             throw new NotFoundException('Nenhum time encontrado');
         }
-        
-        return teams;
+
+        const totalPages = Math.ceil(total / limit);
+
+        return {
+            data: teams,
+            pagination: {
+                page: page,
+                limit: limit,
+                total: total,
+                totalPages: totalPages,
+                hasNext: page < totalPages,
+                hasPrev: page > 1,
+            },
+        };
     }
 
     // Método consumido no TrainersController em /trainers/:id/teams
     async findAllByTrainer(trainerId: number): Promise<TeamResponseDto[]> {
+        // Busca um treinador pelo id
+        const trainer = await this.trainersRepository.findOne({ where: { id: trainerId } });
+        
+        if (!trainer) {
+            throw new NotFoundException('Treinador não encontrado');
+        }
+
         // Busca os times de um treinador pelo id
         const teams = await this.teamsRepository.find({
             where: { treinador: { id: trainerId } },

@@ -3,7 +3,7 @@ import { TeamsController } from './teams.controller';
 import { TeamsService } from './teams.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Team } from './entities/team.entity';
-import { Trainer } from 'src/trainers/entities/trainer.entity';
+import { Trainer } from '../trainers/entities/trainer.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Team, Trainer])],

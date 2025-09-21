@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { TrainersService } from './trainers.service';
 import { CreateTrainerDto } from './dto/create-trainer.dto';
 import { UpdateTrainerDto } from './dto/update-trainer.dto';
@@ -6,6 +6,7 @@ import { TrainerResponseDto } from './dto/trainer-response.dto';
 import { TeamsService } from '../teams/teams.service';
 import { TeamResponseDto } from '../teams/dto/team-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { PaginationDto, PaginatedResponseDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Treinadores')
 @Controller('trainers')
@@ -25,10 +26,10 @@ export class TrainersController {
 
     @Get()
     @ApiOperation({ summary: 'Listar todos os treinadores' })
-    @ApiResponse({ status: 200, description: 'Lista de treinadores', type: [TrainerResponseDto] })
+    @ApiResponse({ status: 200, description: 'Lista de treinadores', type: PaginatedResponseDto<TrainerResponseDto> })
     @ApiResponse({ status: 404, description: 'Nenhum treinador encontrado' })
-    findAll(): Promise<TrainerResponseDto[]> {
-        return this.trainersService.findAll();
+    findAll(@Query() pagination: PaginationDto): Promise<PaginatedResponseDto<TrainerResponseDto>> {
+        return this.trainersService.findAll(pagination);
     }
 
     @Get(':id/teams')
@@ -41,7 +42,7 @@ export class TrainersController {
     }
 
     @Get(':id')
-    @ApiOperation({ summary: 'Buscar treinador por ID' })
+    @ApiOperation({ summary: 'Buscar treinador por id' })
     @ApiParam({ name: 'id', description: 'Id do treinador' })
     @ApiResponse({ status: 200, description: 'Treinador encontrado', type: TrainerResponseDto })
     @ApiResponse({ status: 404, description: 'Treinador não encontrado' })

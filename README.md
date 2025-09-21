@@ -41,6 +41,14 @@ API RESTful em NestJS para gerenciar treinadores, times e Pokémon integrando co
 6. **Acesse a documentação**
    - Swagger UI: http://localhost:3000/docs
 
+### Testes
+
+Executar todos os testes unitários.
+
+```bash
+npm test
+```
+
 ## 📋 Funcionalidades
 
 - **CRUD para Treinadores**: Criar, listar, buscar, atualizar e remover treinadores.

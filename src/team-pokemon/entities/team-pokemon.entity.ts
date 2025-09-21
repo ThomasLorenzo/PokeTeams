@@ -1,4 +1,4 @@
-import { Team } from "src/teams/entities/team.entity";
+import { Team } from "../../teams/entities/team.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, JoinColumn } from "typeorm";
 
 @Entity()

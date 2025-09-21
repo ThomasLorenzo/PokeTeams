@@ -77,7 +77,7 @@ export class TeamPokemonService {
         const teamPokemon = await this.teamPokemonRepository.find({ where: { time: { id: teamId }} } );
 
         if (teamPokemon.length === 0) {
-            throw new NotFoundException('Nenhum pokémon encontrado para o time informado');
+            return [];
         }
 
         // Para cada pokémon no time, busca detalhes dele na PokéAPI e adiciona ao retorno

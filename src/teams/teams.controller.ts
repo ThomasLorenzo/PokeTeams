@@ -4,6 +4,7 @@ import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { TeamResponseDto } from './dto/team-response.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { PaginationDto, PaginatedResponseDto } from '../common/dto/pagination.dto';
 
 @ApiTags('Times')
 @Controller('teams')
@@ -21,10 +22,10 @@ export class TeamsController {
 
     @Get()
     @ApiOperation({ summary: 'Listar todos os times' })
-    @ApiResponse({ status: 200, description: 'Lista de times', type: [TeamResponseDto] })
+    @ApiResponse({ status: 200, description: 'Lista de times', type: PaginatedResponseDto<TeamResponseDto> })
     @ApiResponse({ status: 404, description: 'Nenhum time encontrado' })
-    findAll(): Promise<TeamResponseDto[]> {
-        return this.service.findAll();
+    findAll(@Query() pagination: PaginationDto): Promise<PaginatedResponseDto<TeamResponseDto>> {
+        return this.service.findAll(pagination);
     }
 
     @Get(':id')
