@@ -4,9 +4,10 @@ import { TeamPokemonService } from './team-pokemon.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TeamPokemon } from './entities/team-pokemon.entity';
 import { Team } from 'src/teams/entities/team.entity';
+import { PokeApiModule } from 'src/pokeapi/pokeapi.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TeamPokemon, Team])],
+  imports: [TypeOrmModule.forFeature([TeamPokemon, Team]), PokeApiModule],
   controllers: [TeamPokemonController],
   providers: [TeamPokemonService]
 })

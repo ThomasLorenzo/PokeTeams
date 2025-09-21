@@ -2,8 +2,9 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { TeamPokemon } from './entities/team-pokemon.entity';
 import { Repository } from 'typeorm';
-import { Team } from 'src/teams/entities/team.entity';
+import { Team } from '../teams/entities/team.entity';
 import { AddPokemonDto } from './dto/add-pokemon.dto';
+import { PokeApiService } from '../pokeapi/pokeapi.service';
 
 const MAX_POKEMON_PER_TEAM = 6;
 
@@ -12,6 +13,7 @@ export class TeamPokemonService {
     constructor(
         @InjectRepository(TeamPokemon) private readonly teamPokemonRepository: Repository<TeamPokemon>,
         @InjectRepository(Team) private readonly teamsRepository: Repository<Team>,
+        private readonly pokeApi: PokeApiService
     ) {}
 
     async add(teamId: number, dto: AddPokemonDto) {
@@ -32,14 +34,17 @@ export class TeamPokemonService {
             throw new BadRequestException('Limite de 6 pokémon por time atingido');
         }
 
-        const pokemonIdOrName = dto.pokemonIdOuNome.trim().toLowerCase();
+        const normalizedIdOrName = dto.pokemonIdOuNome.trim().toLowerCase();
 
-        // TODO: Verificar se o pokémon existe com o nome ou id fornecido na PokéAPI
-        // TODO: Se existir, pegar nome e id oficial e verificar se existe no time 
+        // Checa se o pokémon com nome ou id informado existe
+        const pokemonDetails = await this.pokeApi.fetchDetails(normalizedIdOrName);
 
         // Verifica se já existe esse pokémon no time pelo id ou nome
         const existsPokemon = await this.teamPokemonRepository.findOne({
-            where: { time: { id: teamId }, pokemonIdOuNome: pokemonIdOrName }
+            where: [
+                { time: { id: teamId }, pokemonIdOuNome: String(pokemonDetails.id) },
+                { time: { id: teamId }, pokemonIdOuNome: pokemonDetails.name },
+            ]
         });
 
         if (existsPokemon) {
@@ -47,7 +52,7 @@ export class TeamPokemonService {
         }
 
         const teamPokemon = this.teamPokemonRepository.create({ 
-            time: team, pokemonIdOuNome: pokemonIdOrName  
+            time: team, pokemonIdOuNome: normalizedIdOrName  
         });
 
         return this.teamPokemonRepository.save(teamPokemon);
@@ -61,7 +66,18 @@ export class TeamPokemonService {
             throw new NotFoundException('Nenhum pokémon encontrado para o time informado');
         }
 
-        return teamPokemon;
+        // Para cada pokémon no time, busca detalhes dele na PokéAPI e adiciona ao retorno
+        return Promise.all(
+            teamPokemon.map(async (teamPokemonEntry) => {
+                const details = await this.pokeApi.fetchDetails(teamPokemonEntry.pokemonIdOuNome);
+                return {
+                    id: teamPokemonEntry.id,
+                    timeId: teamId,
+                    pokemonIdOuNome: teamPokemonEntry.pokemonIdOuNome,
+                    pokemon: details,
+                };
+            }),
+        );
     }
 
     async remove(teamId: number, teamPokemonId: number) {

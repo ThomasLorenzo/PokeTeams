@@ -6,10 +6,10 @@ export class Trainer {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ length: 120 })
+    @Column({ length: 100 })
     nome: string;
 
-    @Column({ length: 120, nullable: true })
+    @Column({ length: 100, nullable: true })
     cidadeOrigem?: string;
 
     @OneToMany(() => Team, (team) => team.treinador) 

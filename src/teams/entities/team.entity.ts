@@ -7,7 +7,7 @@ export class Team {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ length: 120 })
+    @Column({ length: 100 })
     nome: string;
 
     @ManyToOne(() => Trainer, (trainer) => trainer.times, { nullable: false, onDelete: 'CASCADE' })
