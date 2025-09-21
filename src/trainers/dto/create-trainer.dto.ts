@@ -7,5 +7,6 @@ export class CreateTrainerDto {
 
     @IsOptional()
     @IsString()
+    @IsNotEmpty()
     cidadeOrigem?: string;
 }

@@ -1,1 +1,1 @@
-export class TeamPokemonEntity {}
+export class TeamPokemon {}

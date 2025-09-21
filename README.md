@@ -24,4 +24,4 @@ API RESTful em NestJS para gerenciar treinadores, times e Pokémon integrando co
     ```bash
     npm run start:dev
     ```
-6. Acesse em: http://localhost:3000
+6. Acesse http://localhost:3000/docs para documentação.
