@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Team } from '../teams/entities/team.entity';
 import { AddPokemonDto } from './dto/add-pokemon.dto';
 import { PokeApiService } from '../pokeapi/pokeapi.service';
+import { TeamPokemonResponseDto } from './dto/team-pokemon-response.dto';
 
 const MAX_POKEMON_PER_TEAM = 6;
 
@@ -16,8 +17,8 @@ export class TeamPokemonService {
         private readonly pokeApi: PokeApiService
     ) {}
 
-    async add(teamId: number, dto: AddPokemonDto) {
-        // Verifica se o time para adicionar o pokémon existe
+    async add(teamId: number, dto: AddPokemonDto): Promise<TeamPokemonResponseDto> {
+        // Verifica se o time existe
         const team = await this.teamsRepository.findOne({ where: { id: teamId }});
 
         if (!team) {
@@ -43,7 +44,7 @@ export class TeamPokemonService {
         const existsPokemon = await this.teamPokemonRepository.findOne({
             where: [
                 { time: { id: teamId }, pokemonIdOuNome: String(pokemonDetails.id) },
-                { time: { id: teamId }, pokemonIdOuNome: pokemonDetails.name },
+                { time: { id: teamId }, pokemonIdOuNome: pokemonDetails.nome },
             ]
         });
 
@@ -55,10 +56,23 @@ export class TeamPokemonService {
             time: team, pokemonIdOuNome: normalizedIdOrName  
         });
 
-        return this.teamPokemonRepository.save(teamPokemon);
+        const savedTeamPokemon = await this.teamPokemonRepository.save(teamPokemon);
+
+        return {
+            id: savedTeamPokemon.id,
+            timeId: teamId,
+            pokemonIdOuNome: savedTeamPokemon.pokemonIdOuNome,
+            pokemon: pokemonDetails,
+        };
     }
 
-    async list(teamId: number) {
+    async list(teamId: number): Promise<TeamPokemonResponseDto[]> {
+        // Verifica se o time existe
+        const team = await this.teamsRepository.findOne({ where: { id: teamId } });
+        if (!team) {
+            throw new NotFoundException('Time não encontrado');
+        }
+
         // Busca todos os pokémon do time pelo id
         const teamPokemon = await this.teamPokemonRepository.find({ where: { time: { id: teamId }} } );
 
@@ -68,7 +82,7 @@ export class TeamPokemonService {
 
         // Para cada pokémon no time, busca detalhes dele na PokéAPI e adiciona ao retorno
         return Promise.all(
-            teamPokemon.map(async (teamPokemonEntry) => {
+            teamPokemon.map(async (teamPokemonEntry): Promise<TeamPokemonResponseDto> => {
                 const details = await this.pokeApi.fetchDetails(teamPokemonEntry.pokemonIdOuNome);
                 return {
                     id: teamPokemonEntry.id,
@@ -80,7 +94,13 @@ export class TeamPokemonService {
         );
     }
 
-    async remove(teamId: number, teamPokemonId: number) {
+    async remove(teamId: number, teamPokemonId: number): Promise<{ deleted: boolean }> {
+        // Verifica se o time existe
+        const team = await this.teamsRepository.findOne({ where: { id: teamId } });
+        if (!team) {
+            throw new NotFoundException('Time não encontrado');
+        }
+
         // Verifica se o pokémon a remover está presente no time
         const teamPokemon = await this.teamPokemonRepository.findOne({
             where: { id: teamPokemonId, time: { id: teamId } },
@@ -92,6 +112,6 @@ export class TeamPokemonService {
 
         await this.teamPokemonRepository.remove(teamPokemon);
 
-        return { deleted: true};
+        return { deleted: true };
     }
 }

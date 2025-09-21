@@ -5,10 +5,10 @@ import { AxiosResponse } from 'axios';
 
 export interface PokemonDetails {
   id: number;
-  name: string;
-  image: string;
-  types: string[];
-  abilities: string[];
+  nome: string;
+  imagem: string;
+  tipos: string[];
+  habilidades: string[];
 }
 
 @Injectable()
@@ -28,10 +28,10 @@ export class PokeApiService {
 
       return {
         id: data.id,
-        name: data.name,
-        image: data.sprites.other['official-artwork'].front_default,
-        types: data.types.map((typeEntry: { type: { name: string } }) => typeEntry.type.name),
-        abilities: data.abilities.map((abilitiesEntry: { ability: { name: string } }) => abilitiesEntry.ability.name)
+        nome: data.name,
+        imagem: data.sprites.other['official-artwork'].front_default,
+        tipos: data.types.map((typeEntry: { type: { name: string } }) => typeEntry.type.name),
+        habilidades: data.abilities.map((abilitiesEntry: { ability: { name: string } }) => abilitiesEntry.ability.name)
       };
     } catch {
       throw new NotFoundException(`Pokémon '${idOrName}' não encontrado na PokéAPI`);

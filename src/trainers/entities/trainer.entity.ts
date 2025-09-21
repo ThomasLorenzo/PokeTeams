@@ -6,12 +6,12 @@ export class Trainer {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ length: 100 })
+    @Column({ length: 100, nullable: false })
     nome: string;
 
     @Column({ length: 100, nullable: true })
     cidadeOrigem?: string;
 
-    @OneToMany(() => Team, (team) => team.treinador) 
+    @OneToMany(() => Team, (team) => team.treinador, { cascade: true }) 
     times: Team[];
 }

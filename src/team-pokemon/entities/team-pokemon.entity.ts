@@ -1,5 +1,5 @@
 import { Team } from "src/teams/entities/team.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, Unique, JoinColumn } from "typeorm";
 
 @Entity()
 @Unique(['time', 'pokemonIdOuNome'])
@@ -8,8 +8,9 @@ export class TeamPokemon {
     id: number;
 
     @ManyToOne(() => Team, (team) => team.pokemon, { nullable: false, onDelete: 'CASCADE' })
+    @JoinColumn({ name: 'timeId' })
     time: Team;
 
-    @Column({ length: 50 })
+    @Column({ length: 50, nullable: false })
     pokemonIdOuNome: string;
 }

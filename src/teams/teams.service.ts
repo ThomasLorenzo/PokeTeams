@@ -4,6 +4,7 @@ import { Team } from './entities/team.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
+import { TeamResponseDto } from './dto/team-response.dto';
 import { Trainer } from '../trainers/entities/trainer.entity';
 
 @Injectable()
@@ -13,7 +14,7 @@ export class TeamsService {
         @InjectRepository(Trainer) private trainersRepository: Repository<Trainer>
     ) {}
 
-    async create(dto: CreateTeamDto) {
+    async create(dto: CreateTeamDto): Promise<TeamResponseDto> {
         // Verifica se o treinador a adicionar no time existe
         const trainer = await this.trainersRepository.findOne({ where: { id: dto.treinadorId } });
 
@@ -23,13 +24,14 @@ export class TeamsService {
         
         const team = this.teamsRepository.create({
             nome: dto.nome,
+            treinadorId: dto.treinadorId,
             treinador: trainer,
         });
 
         return this.teamsRepository.save(team);
     }
 
-    async findAll() {
+    async findAll(): Promise<TeamResponseDto[]> {
         // Busca todos os times, ligando com os treinadores
         const teams = await this.teamsRepository.find({ relations: ['treinador'] });
         
@@ -41,7 +43,7 @@ export class TeamsService {
     }
 
     // Método consumido no TrainersController em /trainers/:id/teams
-    async findAllByTrainer(trainerId: number) {
+    async findAllByTrainer(trainerId: number): Promise<TeamResponseDto[]> {
         // Busca os times de um treinador pelo id
         const teams = await this.teamsRepository.find({
             where: { treinador: { id: trainerId } },
@@ -55,7 +57,7 @@ export class TeamsService {
         return teams;
     }
 
-    async findOne(id: number) {
+    async findOne(id: number): Promise<TeamResponseDto> {
         // Busca um time pelo id 
         const team = await this.teamsRepository.findOne({ where: { id }, relations: ['treinador'] });
         
@@ -66,7 +68,7 @@ export class TeamsService {
         return team;
     }
 
-    async update(id: number, dto: UpdateTeamDto) {
+    async update(id: number, dto: UpdateTeamDto): Promise<TeamResponseDto> {
         // Busca um time pelo id
         const team = await this.findOne(id);
 
@@ -75,15 +77,27 @@ export class TeamsService {
         }
         
         if (dto.treinadorId) {
-            (team as any).treinador = { id: dto.treinadorId } as any;
+            // Verifica se o novo treinador existe
+            const trainer = await this.trainersRepository.findOne({ where: { id: dto.treinadorId } });
+            
+            if (!trainer) {
+                throw new NotFoundException('Treinador não encontrado');
+            }
+
+            team.treinadorId = dto.treinadorId;
+            team.treinador = trainer;
         }
 
         return this.teamsRepository.save(team);
     }
 
-    async remove(id: number) {
+    async remove(id: number): Promise<{ deleted: boolean }> {
         // Busca um time pelo id
-        const team = await this.findOne(id);
+        const team = await this.teamsRepository.findOne({ where: { id } });
+        
+        if (!team) {
+            throw new NotFoundException('Time não encontrado');
+        }
 
         await this.teamsRepository.remove(team);
 
