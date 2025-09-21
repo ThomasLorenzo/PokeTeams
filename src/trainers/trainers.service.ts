@@ -11,34 +11,47 @@ export class TrainersService {
 
     create(dto: CreateTrainerDto) {
         const trainer = this.repository.create(dto);
+
         return this.repository.save(trainer);
     }
 
     async findAll() {
+        // Busca todos os treinadores
         const trainers = await this.repository.find();
+        
         if (trainers.length === 0) {
             throw new NotFoundException('Nenhum treinador encontrado');
         }
+        
         return trainers;
     }
 
     async findOne(id: number) {
+        // Busca um treinador pelo id
         const trainer = await this.repository.findOne({ where: { id } });
+        
         if (!trainer) {
             throw new NotFoundException('Treinador não encontrado');
         }
+        
         return trainer;
     }
 
     async update(id: number, dto: UpdateTrainerDto) {
+        // Busca um treinador pelo id
         const trainer = await this.findOne(id);
+
         Object.assign(trainer, dto);
+        
         return this.repository.save(trainer);
     }
 
     async remove(id: number) {
+        // Busca um treinador pelo id
         const trainer = await this.findOne(id);
+
         await this.repository.remove(trainer);
+        
         return { deleted: true };
     }
 }
