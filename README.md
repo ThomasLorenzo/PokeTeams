@@ -15,7 +15,7 @@ API RESTful em NestJS para gerenciar treinadores, times e Pokémon integrando co
 1. **Clone o repositório**
    ```bash
    git clone https://github.com/ThomasLorenzo/PokeTeams.git
-   cd poke-teams
+   cd PokeTeams
    ```
 
 2. **Instale as dependências**
