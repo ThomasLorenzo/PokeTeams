@@ -25,7 +25,7 @@ API RESTful em NestJS para gerenciar treinadores, times e Pokémon integrando co
 
 3. **Configure as variáveis de ambiente**
    ```bash
-   cp env.example .env
+   cp .env.example .env
    ```
 
 4. **Suba o banco de dados PostgreSQL**
